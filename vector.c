@@ -48,7 +48,7 @@ void vector_free (vector **p_vector)
 
 void *vector_at (const vector *vector, size_t ind)
 {
-  if (!vector || ind < 0 || ind >= vector->size)
+  if (!vector ||  ind >= vector->size) //ind < 0 ||
     {
       return NULL;
     }
@@ -136,7 +136,7 @@ int vector_decrease_capacity (vector *vector)
 
 int vector_erase (vector *vector, size_t ind)
 {
-  if (!vector || ind < 0 || ind >= vector->size)
+  if (!vector || ind >= vector->size) //ind < 0 ||
     {
       return 0;
     }
