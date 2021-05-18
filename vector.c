@@ -42,7 +42,7 @@ void vector_free (vector **p_vector)
       (*p_vector)->elem_free_func (&(*p_vector)->data[i]);
     }
   free ((*p_vector)->data);
-  free ((*p_vector));
+  free (*p_vector);
   *p_vector = NULL;
 }
 
@@ -71,6 +71,23 @@ int vector_find (const vector *vector, const void *value)
   return -1;
 }
 
+/// increasing the capacity of the vector if needed.
+/// \param vector the current vector
+/// \return 1 if successful. 0, otherwise.
+int vector_increase_capacity (vector *vector)
+{
+  vector->capacity *= VECTOR_GROWTH_FACTOR;
+  // TODO: make sure it should be **tmp or *tmp below:
+  void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
+  if (!tmp)
+    {
+      vector->capacity /= VECTOR_GROWTH_FACTOR;
+      return 0;
+    }
+  vector->data = tmp;
+  return 1;
+}
+
 int vector_push_back (vector *vector, const void *value)
 {
   if (!vector || !value)
@@ -82,20 +99,10 @@ int vector_push_back (vector *vector, const void *value)
 
   vector->data[vector->size] = vector->elem_copy_func (value);
   vector->size++;
-
   if (VECTOR_MAX_LOAD_FACTOR < vector_get_load_factor (vector))
     {
-      vector->capacity *= VECTOR_GROWTH_FACTOR;
-      // TODO: make sure it should be **tmp or *tmp below:
-      void **tmp = realloc (vector->data, sizeof (value) * vector->capacity);
-      if (!tmp)
-        {
-          vector->capacity /= VECTOR_GROWTH_FACTOR;
-          return -1;
-        }
-      vector->data = tmp;
+      return vector_increase_capacity (vector);
     }
-
   return 1;
 
 }
@@ -107,6 +114,24 @@ double vector_get_load_factor (const vector *vector)
       return -1;
     }
   return (double) vector->size / (double) vector->capacity;
+}
+
+/// decreasing the capacity of the vector if needed.
+/// \param vector the current vector
+/// \return 1 if successful. 0, otherwise.
+int vector_decrease_capacity (vector *vector)
+{
+  vector->capacity /= VECTOR_GROWTH_FACTOR;
+  // TODO: make sure it should be **tmp or *tmp below:
+  void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
+  if (!tmp)
+    {
+      vector->capacity *= VECTOR_GROWTH_FACTOR;
+      return 0;
+    }
+  vector->data = tmp;
+
+  return 1;
 }
 
 int vector_erase (vector *vector, size_t ind)
@@ -124,15 +149,7 @@ int vector_erase (vector *vector, size_t ind)
 
   if (VECTOR_MIN_LOAD_FACTOR > vector_get_load_factor (vector))
     {
-      vector->capacity /= VECTOR_GROWTH_FACTOR;
-      // TODO: make sure it should be **tmp or *tmp below:
-      void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
-      if (!tmp)
-        {
-          vector->capacity *= VECTOR_GROWTH_FACTOR;
-          return 0;
-        }
-      vector->data = tmp;
+      return vector_decrease_capacity (vector);
     }
   return 1;
 }
@@ -143,9 +160,8 @@ void vector_clear (vector *vector)
     {
       return;
     }
-  for (size_t i = 0; i < vector->size; ++i)
+  while (vector->size > 0)
     {
-      vector->elem_free_func (&(vector->data[i]));
+      vector_erase (vector, 0);
     }
-  vector->size = 0;
 }
