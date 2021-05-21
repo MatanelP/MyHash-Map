@@ -5,7 +5,6 @@
 #include "test_suite.h"
 #include "hash_funcs.h"
 #include "test_pairs.h"
-//#include "pair_char_int.h"
 #include <stdio.h>
 
 void print_vector (vector *p_vector)
