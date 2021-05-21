@@ -19,7 +19,7 @@ vector *vector_alloc (vector_elem_cpy elem_copy_func,
     }
   new_vector->capacity = VECTOR_INITIAL_CAP;
   new_vector->size = 0;
-  new_vector->data = malloc (sizeof (void *) * new_vector->capacity);
+  new_vector->data = calloc(sizeof (void *) , new_vector->capacity);
   if (!new_vector->data)
     {
       free (new_vector);
