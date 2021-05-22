@@ -7,6 +7,7 @@
 #include "test_pairs.h"
 #include <stdio.h>
 
+
 void print_vector (vector *p_vector)
 {
   for (size_t i = 0; i < p_vector->capacity; ++i)
