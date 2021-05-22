@@ -69,7 +69,7 @@ void int_value_free (valueT *val)
 
 /**
  * @param elem pointer to a char (keyT of pair_char_int)
- * @return 1 if the char represents a digit, else - 0
+ * @return 1 if the char represents in int is even digit, else - 0
  */
 int is_in_even_index (const_keyT elem)
 {
@@ -79,6 +79,16 @@ int is_in_even_index (const_keyT elem)
       return 1;
   }
   return 0;
+}
+
+/**
+ * @param elem pointer to a char (keyT of pair_char_int)
+ * @return 1 if the char represents a digit, else - 0
+ */
+int is_digit (const_keyT elem)
+{
+  char c = *((char *) elem);
+  return (c > 47 && c < 58);
 }
 
 /**
