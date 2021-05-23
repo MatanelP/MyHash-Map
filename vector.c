@@ -104,7 +104,6 @@ int vector_push_back (vector *vector, const void *value)
       return vector_increase_capacity (vector);
     }
   return 1;
-
 }
 
 double vector_get_load_factor (const vector *vector)
