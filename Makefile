@@ -1,6 +1,6 @@
 CC = gcc
 CCFLAGS = -c -Wall -Wextra -Wvla -Werror -g -lm -std=c99
-.PHONY: all, clean
+.PHONY: all clean
 
 all: hashmap.o vector.o pair.o hashmap_tests.o
 	ar rcs -o libhashmap.a hashmap.o vector.o pair.o
