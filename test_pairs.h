@@ -6,6 +6,77 @@
 #define _TEST_PAIRS_H_
 
 #include "pair.h"
+
+
+typedef struct Point 
+{
+  double _x;
+  double _y;
+}Point;
+
+
+/**
+ * Copies the double key of the pair.
+ */
+void *double_key_cpy (const_keyT key)
+{
+  double *new_double = malloc (sizeof (double));
+  *new_double = *((double *) key);
+  return new_double;
+}
+
+/**
+ * Copies the point value of the pair.
+ */
+void *point_value_cpy (const_valueT value)
+{
+  Point *new_point = malloc (sizeof (Point));
+  new_point->_x = ((Point *) value)->_x;
+  new_point->_y = ((Point *) value)->_y;
+  return new_point;
+}
+
+/**
+* Compares the double key of the pair.
+*/
+int double_key_cmp (const_keyT key_1, const_keyT key_2)
+{
+  return *(double *) key_1 == *(double *) key_2;
+}
+
+/**
+ * Compares the point value of the pair.
+ */
+int point_value_cmp (const_valueT val_1, const_valueT val_2)
+{
+  return (((Point *)val_1)->_x == ((Point *)val_2)->_x) 
+                            && (((Point *)val_1)->_y == ((Point *)val_2)->_y);
+}
+
+/**
+ * Frees the double key of the pair.
+ */
+void double_key_free (keyT* key)
+{
+  if (key && *key)
+    {
+      free (*key);
+      *key = NULL;
+    }
+}
+
+/**
+ * Frees the point value of the pair.
+ */
+void point_value_free (valueT *val)
+{
+  if (val && *val)
+    {
+      free (*val);
+      *val = NULL;
+    }
+}
+
 /**
  * Copies the char key of the pair.
  */

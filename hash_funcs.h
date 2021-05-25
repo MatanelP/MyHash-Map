@@ -27,4 +27,12 @@ size_t hash_double(const void *elem){
     return hash;
 }
 
+/**
+ * float simple hash func.
+ */
+size_t hash_float(const void *elem){
+  size_t hash = *((float *) elem);
+  return hash;
+}
+
 #endif // HASHFUNCS_H_

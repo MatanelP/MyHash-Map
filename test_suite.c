@@ -7,19 +7,23 @@
 #include "test_pairs.h"
 #include <stdio.h>
 
-
 void print_vector (vector *p_vector)
 {
+  if (!p_vector)
+    {
+      return;
+    }
   for (size_t i = 0; i < p_vector->capacity; ++i)
     {
       pair *cur = vector_at (p_vector, i);
       if (cur == NULL)
         {
-          printf ("  X  |");
+          printf ("          X          |");
         }
       else
         {
-          printf (" %c:%i |", *(char *) cur->key, *(int *) cur->value);
+          printf (" %.2f:(%.2f,%.2f) |", *(double *) cur->key,
+                  ((Point *) cur->value)->_x, ((Point *) cur->value)->_y) ;
         }
     }
 }
@@ -45,9 +49,12 @@ void test_hash_map_init ()
   hashmap_free (&new_hashtable);
   assert(new_hashtable == NULL);
 }
+
+void test_hash_map_insert_structs (void);
+
 /**
  * This function checks the hashmap_insert function of the hashmap library.
- * If hashmap_insert fails at some points, the functions exits with exit code 1.
+ * If hashmap_insert fails at some points, the functions exits with exitcode 1.
  */
 void test_hash_map_insert (void)
 {
@@ -59,42 +66,45 @@ void test_hash_map_insert (void)
   assert(return_val == 0);
   // CREATING PAIRS:
 
-  // char:int pairs:
+  // char:int char_int_pairs:
 
 
-  pair *pairs[12];
+  pair *char_int_pairs[12];
   pair *tmp;
 
   for (int j = 0; j < 12; ++j)
     {
-      char key = (char) (j + 65);
-      int value = j + 1;
-      tmp = pair_alloc (&key, &value, char_key_cpy, int_value_cpy,
+      char char_key = (char) (j + 65);
+      int int_value = j + 1;
+      tmp = pair_alloc (&char_key, &int_value, char_key_cpy, int_value_cpy,
                         char_key_cmp, int_value_cmp, char_key_free,
                         int_value_free);
       if (!tmp)
         {
           break;
         }
-      pairs[j] = tmp;
+      char_int_pairs[j] = tmp;
+
     }
+
   int k = 0;
   int value;
   size_t ind;
-  double load_factor;
-  // inserting pairs to hashtable:
+  // inserting char_int_pairs to hashtable:
   for (; k < 12; ++k)
     {
-      return_val = hashmap_insert (char_int_hashtable, pairs[k]);
+      return_val = hashmap_insert (char_int_hashtable, char_int_pairs[k]);
       assert(return_val == 1);
-      ind = char_int_hashtable->hash_func (pairs[k]->key)
+      ind = char_int_hashtable->hash_func (char_int_pairs[k]->key)
             & (char_int_hashtable->capacity - 1);
-      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->data[0])->value);
+      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]
+                                                          ->data[0])->value);
       assert(value == k + 1);
+
+
+
       assert(char_int_hashtable->size == (size_t) k + 1);
       assert(char_int_hashtable->capacity == 16);
-      load_factor = hashmap_get_load_factor (char_int_hashtable);
-      assert(load_factor == ((k + 1) / 16.0));
     }
 
   // inserting another pair to check capacity increase.
@@ -103,28 +113,33 @@ void test_hash_map_insert (void)
   tmp = pair_alloc (&key_13, &value_13, char_key_cpy, int_value_cpy,
                     char_key_cmp, int_value_cmp, char_key_free,
                     int_value_free);
-  pair *pair_13 = tmp;
-  return_val = hashmap_insert (NULL, pair_13);
+  pair *char_int_pair_13 = tmp;
+  return_val = hashmap_insert (NULL, char_int_pair_13);
   assert(return_val == 0);
-  return_val = hashmap_insert (char_int_hashtable, pair_13);
+  return_val = hashmap_insert (char_int_hashtable, char_int_pair_13);
   assert(return_val == 1);
   assert(char_int_hashtable->capacity == 32);
   assert(char_int_hashtable->size == 13);
-  load_factor = hashmap_get_load_factor (char_int_hashtable);
-  assert(load_factor == 0.40625);
-  ind = char_int_hashtable->hash_func (pair_13->key)
+  ind = char_int_hashtable->hash_func (char_int_pair_13->key)
         & (char_int_hashtable->capacity - 1);
-  value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->data[0])->value);
+  value = *((int *) ((pair *) char_int_hashtable->buckets[ind]
+                                                        ->data[0])->value);
   assert(value == value_13);
+
+
+
+
 
   // making sure there is no data lost after capacity changed:
   k = 0;
   for (; k < 12; ++k)
     {
-      ind = char_int_hashtable->hash_func (pairs[k]->key)
+      ind = char_int_hashtable->hash_func (char_int_pairs[k]->key)
             & (char_int_hashtable->capacity - 1);
-      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->data[0])->value);
+      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]
+                                                          ->data[0])->value);
       assert(value == k + 1);
+
     }
 
   // trying to add already existing key, should not work:
@@ -133,21 +148,150 @@ void test_hash_map_insert (void)
   tmp = pair_alloc (&key_13b, &value_13b, char_key_cpy, int_value_cpy,
                     char_key_cmp, int_value_cmp, char_key_free,
                     int_value_free);
-  pair *pair_13b = tmp;
-  return_val = hashmap_insert (char_int_hashtable, pair_13b);
+  pair *char_int_pair_13b = tmp;
+  return_val = hashmap_insert (char_int_hashtable, char_int_pair_13b);
   assert(return_val == 0);
 
   // Free the pairs.
   for (int k_i = 0; k_i < 12; ++k_i)
     {
-      pair_free ((void **) &pairs[k_i]);
+      pair_free ((void **) &char_int_pairs[k_i]);
     }
-  pair_free ((void **) &pair_13);
-  pair_free ((void **) &pair_13b);
+
+  pair_free ((void **) &char_int_pair_13);
+  pair_free ((void **) &char_int_pair_13b);
 
   //Free the hash-map.
   hashmap_free (&char_int_hashtable);
+  test_hash_map_insert_structs ();
 
+}
+
+
+void test_hash_map_insert_structs (void)
+{
+  hashmap *double_point_hashtable = hashmap_alloc (hash_double);
+
+  // CREATING PAIRS:
+
+  // char:int char_int_pairs:
+
+
+  pair *double_point_pairs[12];
+  pair *tmp;
+
+  for (int j = 0; j < 12; ++j)
+    {
+      Point* point_value = malloc (sizeof (Point));
+
+      point_value->_x = j;
+      point_value->_y = (26-j);
+      double double_key = ((point_value->_x)*(point_value->_x)
+                               + (point_value->_y)*(point_value->_y));
+
+      tmp = pair_alloc (&double_key, point_value,
+                        double_key_cpy, point_value_cpy,
+                        double_key_cmp, point_value_cmp,
+                        double_key_free, point_value_free);
+      if (!tmp)
+        {
+          break;
+        }
+      double_point_pairs[j] = tmp;
+      free(point_value);
+    }
+  int k = 0;
+  int value;
+  size_t ind;
+  int return_val;
+  // inserting char_int_pairs to hashtable:
+  for (; k < 12; ++k)
+    {
+      return_val = hashmap_insert (double_point_hashtable,
+                                   double_point_pairs[k]);
+      assert(return_val == 1);
+      ind = double_point_hashtable->hash_func (double_point_pairs[k]->key)
+            & (double_point_hashtable->capacity - 1);
+      value = 0;
+      for (size_t j = 0; j < double_point_hashtable->buckets[ind]->size; ++j)
+        {
+          double v = (double) k;
+          tmp = vector_at (double_point_hashtable->buckets[ind], j);
+          double key = ((v)*(v) + (26-v)*(26-v));
+          keyT key_p = &key;
+          if (tmp->key_cmp (tmp->key, key_p))
+            {
+              value = 1;
+              break;
+            }
+        }
+      assert(value == 1);
+      assert(double_point_hashtable->size == (size_t) k + 1);
+      assert(double_point_hashtable->capacity == 16);
+    }
+  // inserting another pair to check capacity increase.
+
+  Point* point_value_13 = malloc (sizeof (Point));
+  point_value_13->_x = -1;
+  point_value_13->_y = (27);
+  double double_key = ((point_value_13->_x)*(point_value_13->_x)
+                           + (point_value_13->_y)*(point_value_13->_y));
+
+  tmp = pair_alloc (&double_key, point_value_13,
+                    double_key_cpy, point_value_cpy,
+                    double_key_cmp, point_value_cmp,
+                    double_key_free, point_value_free);
+  pair *double_point_pair_13 = tmp;
+  return_val = hashmap_insert (double_point_hashtable, double_point_pair_13);
+  assert(return_val == 1);
+  assert(double_point_hashtable->capacity == 32);
+  assert(double_point_hashtable->size == 13);
+  ind = double_point_hashtable->hash_func (double_point_pair_13->key)
+        & (double_point_hashtable->capacity - 1);
+
+  value = 0;
+  for (size_t j = 0; j < double_point_hashtable->buckets[ind]->size; ++j)
+    {
+      tmp = vector_at (double_point_hashtable->buckets[ind], j);
+      double key = ((-1)*(-1) + (27)*(27));
+      keyT key_p = &key;
+      if (tmp->key_cmp (tmp->key, key_p))
+        {
+          value = 1;
+          break;
+        }
+    }
+  assert(value == 1);
+  // making sure there is no data lost after capacity changed:
+  k = 0;
+  for (; k < 12; ++k)
+    {
+      ind = double_point_hashtable->hash_func (double_point_pairs[k]->key)
+            & (double_point_hashtable->capacity - 1);
+      value = 0;
+      for (size_t j = 0;  double_point_hashtable->buckets[ind] &&
+                          j < double_point_hashtable->buckets[ind]->size; ++j)
+        {
+          double v = (double) k;
+          tmp = vector_at (double_point_hashtable->buckets[ind], j);
+          double key = ((v)*(v) + (26-v)*(26-v));
+          keyT key_p = &key;
+          if (tmp->key_cmp (tmp->key, key_p))
+            {
+              value = 1;
+              break;
+            }
+        }
+      assert(value == 1);
+    }
+
+  for (int k_i = 0; k_i < 12; ++k_i)
+    {
+      pair_free ((void **) &double_point_pairs[k_i]);
+    }
+  pair_free ((void **) &double_point_pair_13);
+  free(point_value_13);
+  hashmap_free (&double_point_hashtable);
 }
 
 /**
@@ -271,7 +415,8 @@ void test_hash_map_erase (void)
     {
       ind = char_int_hashtable->hash_func (pairs[k]->key)
             & (char_int_hashtable->capacity - 1);
-      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->data[0])->value);
+      value = *((int *) ((pair *) char_int_hashtable->buckets[ind]
+                                                            ->data[0])->value);
       assert(value == k + 1);
     }
 
@@ -364,18 +509,22 @@ void test_hash_map_get_load_factor (void)
 
 /**
  * This function checks the HashMapGetApplyIf function of the hashmap library.
- * If HashMapGetApplyIf fails at some points, the functions exits with exit code 1.
+ * If HashMapGetApplyIf fails at some points, the functions exits with exit
+ * code 1.
  */
 void test_hash_map_apply_if ()
 {
   hashmap *char_int_hashtable = hashmap_alloc (hash_char);
 
-  int return_val = hashmap_apply_if (NULL, is_in_even_index, double_value);
-  assert(return_val == 0);
-  return_val = hashmap_apply_if (char_int_hashtable, NULL, double_value);
-  assert(return_val == 0);
-  return_val = hashmap_apply_if (char_int_hashtable, is_in_even_index, NULL);
-  assert(return_val == 0);
+  int return_val = hashmap_apply_if (NULL, is_in_even_index,
+                                                               double_value);
+  assert(return_val == -1);
+  return_val = hashmap_apply_if (char_int_hashtable, NULL,
+                                                               double_value);
+  assert(return_val == -1);
+  return_val = hashmap_apply_if (char_int_hashtable, is_in_even_index,
+                                                              NULL);
+  assert(return_val == -1);
   // CREATING PAIRS:
 
   // char:int pairs:
@@ -405,7 +554,8 @@ void test_hash_map_apply_if ()
     {
       hashmap_insert (char_int_hashtable, pairs[k]);
     }
-  return_val = hashmap_apply_if (char_int_hashtable, is_in_even_index, double_value);
+  return_val = hashmap_apply_if (char_int_hashtable, is_in_even_index,
+                                                                double_value);
   assert(return_val==6);
 
   // making sure the wanted values actually changed:
@@ -414,9 +564,10 @@ void test_hash_map_apply_if ()
     {
       ind = char_int_hashtable->hash_func (pairs[k]->key)
             & (char_int_hashtable->capacity - 1);
-      if (k%2 != 0)
+      if (char_int_hashtable->buckets[ind] && k%2 != 0)
         {
-          value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->data[0])->value);
+          value = *((int *) ((pair *) char_int_hashtable->buckets[ind]->
+                                                            data[0])->value);
           assert(value == 2 * (k + 1));
         }
     }
