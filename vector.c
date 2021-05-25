@@ -77,7 +77,6 @@ int vector_find (const vector *vector, const void *value)
 int vector_increase_capacity (vector *vector)
 {
   vector->capacity *= VECTOR_GROWTH_FACTOR;
-  // TODO: make sure it should be **tmp or *tmp below:
   void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
   if (!tmp)
     {
@@ -94,10 +93,12 @@ int vector_push_back (vector *vector, const void *value)
     {
       return -1;
     }
-
-  // TODO: what if elem_copy_func(value) returns null due to alloc failure?
-
-  vector->data[vector->size] = vector->elem_copy_func (value);
+  void * tmp = vector->elem_copy_func (value);
+  if (!tmp)
+    {
+      return -1;
+    }
+  vector->data[vector->size] = tmp;
   vector->size++;
   if (VECTOR_MAX_LOAD_FACTOR < vector_get_load_factor (vector))
     {
@@ -121,7 +122,6 @@ double vector_get_load_factor (const vector *vector)
 int vector_decrease_capacity (vector *vector)
 {
   vector->capacity /= VECTOR_GROWTH_FACTOR;
-  // TODO: make sure it should be **tmp or *tmp below:
   void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
   if (!tmp)
     {
