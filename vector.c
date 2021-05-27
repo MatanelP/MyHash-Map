@@ -79,7 +79,7 @@ int vector_increase_capacity (vector *vector)
   vector->capacity *= VECTOR_GROWTH_FACTOR;
   void **tmp = realloc (vector->data, sizeof (void *) * vector->capacity);
   if (!tmp)
-    {
+    { //return vector to previous state:
       vector->capacity /= VECTOR_GROWTH_FACTOR;
       return 0;
     }
@@ -91,19 +91,23 @@ int vector_push_back (vector *vector, const void *value)
 {
   if (!vector || !value)
     {
-      return -1;
+      return 0;
     }
   void * tmp = vector->elem_copy_func (value);
   if (!tmp)
     {
-      return -1;
+      return 0;
     }
-  vector->data[vector->size] = tmp;
   vector->size++;
   if (VECTOR_MAX_LOAD_FACTOR < vector_get_load_factor (vector))
     {
-      return vector_increase_capacity (vector);
+      if (!vector_increase_capacity (vector))
+        {
+          vector->size--;
+          return 0;
+        }
     }
+  vector->data[vector->size-1] = tmp;
   return 1;
 }
 
@@ -139,16 +143,21 @@ int vector_erase (vector *vector, size_t ind)
     {
       return 0;
     }
-  vector->elem_free_func (&(vector->data[ind]));
-  for (size_t i = ind; i < vector->size; ++i)
-    {
-      vector->data[i] = vector->data[i + 1];
-    }
   vector->size--;
 
   if (VECTOR_MIN_LOAD_FACTOR > vector_get_load_factor (vector))
     {
-      return vector_decrease_capacity (vector);
+      if (!vector_decrease_capacity (vector))
+        {
+          vector->size++;
+          return 0;
+        }
+    }
+
+  vector->elem_free_func (&(vector->data[ind]));
+  for (size_t i = ind; i < vector->size + 1; ++i)
+    {
+      vector->data[i] = vector->data[i + 1];
     }
   return 1;
 }
