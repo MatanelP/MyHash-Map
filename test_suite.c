@@ -1,55 +1,11 @@
 //
 // Created by Matanel on 12/05/2021.
 //
-
 #include "test_suite.h"
 #include "hash_funcs.h"
 #include "test_pairs.h"
-#include <stdio.h>
 
-void print_vector (vector *p_vector)
-{
-  if (!p_vector)
-    {
-      return;
-    }
-  for (size_t i = 0; i < p_vector->capacity; ++i)
-    {
-      pair *cur = vector_at (p_vector, i);
-      if (cur == NULL)
-        {
-          printf ("          X          |");
-        }
-      else
-        {
-          printf (" %.2f:(%.2f,%.2f) |", *(double *) cur->key,
-                  ((Point *) cur->value)->_x, ((Point *) cur->value)->_y) ;
-        }
-    }
-}
-void print_hashmap (hashmap *hash_map)
-{
-  for (size_t i = 0; i < hash_map->capacity; ++i)
-    {
-      printf ("buckets[%zu]: \n\t\t\t[", i);
-      print_vector (hash_map->buckets[i]);
-      printf ("*]\n");
-    }
-  printf ("\n\n");
 
-}
-
-void test_hash_map_init ()
-{
-  hashmap *new_hashtable = hashmap_alloc (hash_int);
-  assert(new_hashtable);
-  assert(new_hashtable->size == 0);
-  assert(new_hashtable->capacity == 16);
-  assert(new_hashtable->hash_func != NULL);
-  assert(new_hashtable->buckets != NULL);
-  hashmap_free (&new_hashtable);
-  assert(new_hashtable == NULL);
-}
 
 void test_hash_map_insert_structs (void);
 
@@ -59,7 +15,6 @@ void test_hash_map_insert_structs (void);
  */
 void test_hash_map_insert (void)
 {
-  test_hash_map_init ();
 
   hashmap *char_int_hashtable = hashmap_alloc (hash_char);
   assert(char_int_hashtable);
