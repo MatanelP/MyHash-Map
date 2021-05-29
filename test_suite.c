@@ -341,7 +341,10 @@ void test_hash_map_erase (void)
   assert(char_int_hashtable->size == 4);
   ind = char_int_hashtable->hash_func (pairs[k - 1]->key)
         & (char_int_hashtable->capacity - 1);
-  assert(char_int_hashtable->buckets[ind]->data[0] == NULL);
+  if(char_int_hashtable->buckets[ind])
+    {
+      assert(char_int_hashtable->buckets[ind]->data[0] == NULL);
+    }
 
 
   //if key not in map:
